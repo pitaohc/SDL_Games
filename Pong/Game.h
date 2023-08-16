@@ -18,6 +18,7 @@ struct Paddle
     };
     Vector2 mPosition;
     float mVelocity;
+    float mHeight;
     
 };
 constexpr int thickness = 15;

@@ -6,13 +6,17 @@ Game::Game():
     mIsRunning(true),mWindow(nullptr),mRenderer(nullptr),
     mBall(nullptr),mPaddle(nullptr),mTicksCount(0),mPaddleDir(0)
 {
+    //初始化球
     mBall = new Ball();
-    mPaddle = new Paddle();
     mBall->mPosition.x = static_cast<float>(mWindowWidth) / 2.0f;
     mBall->mPosition.y = static_cast<float>(mWindowHeight) / 2.0f;
+    mBall->mVelocity.x = 400.0f;
+    mBall->mVelocity.y = 235.0f;
+    //初始化球拍
+    mPaddle = new Paddle();
     mPaddle->mPosition.x = 30.0f;
     mPaddle->mPosition.y = static_cast<float>(mWindowHeight) / 2.0f;
-    
+    mPaddle->mHeight = 100.0f;
 }
 bool Game::Initialize(){
     fmt::print("Game::Start Initialize\n");
@@ -25,7 +29,7 @@ bool Game::Initialize(){
     //初始化窗口
     mWindow = SDL_CreateWindow(
         "Game Programming",
-        100, 100,
+        (1920 - mWindowWidth) / 2, (1080 - mWindowHeight) / 2,
         mWindowWidth, mWindowHeight,
         0);
     if(!mWindow){
@@ -107,10 +111,42 @@ void Game::UpdateGame()
     //更新球拍位置
     mPaddle->mPosition.y += mPaddleDir * 300.0f * deltaTime;
     //限制球拍位置
-    mPaddle->mPosition.y = std::max(mPaddle->mPosition.y, static_cast<float>(50+ thickness));
-    mPaddle->mPosition.y = std::min(mPaddle->mPosition.y, static_cast<float>(mWindowHeight - 50 - thickness));
+    mPaddle->mPosition.y = std::max(mPaddle->mPosition.y, static_cast<float>(mPaddle->mHeight/2+ thickness));
+    mPaddle->mPosition.y = std::min(mPaddle->mPosition.y, static_cast<float>(mWindowHeight - mPaddle->mHeight / 2 - thickness));
     //重置球拍移动方向
     mPaddleDir = 0;
+
+    //更新球的位置
+    mBall->mPosition.x += mBall->mVelocity.x * deltaTime;
+    mBall->mPosition.y += mBall->mVelocity.y * deltaTime;
+    //检测球是否碰到墙壁
+    if (mBall->mPosition.x - thickness / 2 <= thickness && mBall->mVelocity.x < 0.0f) {
+        //Game Over
+        fmt::print(fg(fmt::color::red), "GAME OVER!!!\n");
+        mIsRunning = false;
+    }
+    else if (mBall->mPosition.x + thickness/2 >= mWindowWidth - thickness && mBall->mVelocity.x > 0.0f) {
+        fmt::print(fg(fmt::color::yellow), "Ball hits the right wall\n");
+        mBall->mVelocity.x *= -1;
+    }
+    else if (mBall->mPosition.y - thickness / 2 <= thickness && mBall->mVelocity.y < 0.0f) {
+        fmt::print(fg(fmt::color::yellow), "Ball hits the top wall\n");
+        mBall->mVelocity.y *= -1;
+    }
+    else if (mBall->mPosition.y + thickness / 2 >= mWindowHeight - thickness && mBall->mVelocity.y > 0.0f) {
+        fmt::print(fg(fmt::color::yellow), "Ball hits the button wall\n");
+        mBall->mVelocity.y *= -1;
+    }
+
+    //检查球与球拍的碰撞
+    float diff_y = abs(mPaddle->mPosition.y - mBall->mPosition.y);
+    float diff_x = mBall->mPosition.x - mPaddle->mPosition.x;
+    if (diff_y < mPaddle->mHeight / 2 &&
+        diff_x < thickness &&
+        mBall->mVelocity.x < 0.0f) {
+        fmt::print(fg(fmt::color::green), "Ball hits the paddle\n");
+        mBall->mVelocity.x *= -1;
+    }
 }
 
 void Game::GenerateOutput()
@@ -124,31 +160,38 @@ void Game::GenerateOutput()
     //清空缓冲区
     SDL_RenderClear(mRenderer);
 
-    //绘制墙壁
+    //绘制球
     SDL_SetRenderDrawColor(
         mRenderer,
-        255, 255, 255, 255);
-    
-    SDL_Rect wall_top = { 0,0,mWindowWidth,thickness };
-    SDL_RenderFillRect(mRenderer, &wall_top);
-    
-    SDL_Rect wall_right = { mWindowWidth -thickness,0,mWindowHeight - thickness,mWindowHeight };
-    SDL_RenderFillRect(mRenderer, &wall_right);
-
-    SDL_Rect wall_button = {0,mWindowHeight-thickness,mWindowWidth,mWindowHeight };
-    SDL_RenderFillRect(mRenderer, &wall_button);
-    //绘制球
+        255, 0, 0, 255);
     SDL_Rect ball_rect = {
         static_cast<int>(mBall->mPosition.x - thickness / 2),
         static_cast<int>(mBall->mPosition.y - thickness / 2),
         thickness,thickness };
     SDL_RenderFillRect(mRenderer, &ball_rect);
     //绘制板子
+    SDL_SetRenderDrawColor(
+        mRenderer,
+        0, 0, 255, 255);
+
     SDL_Rect paddle_rect = {
         static_cast<int>(mPaddle->mPosition.x - thickness / 2),
-        static_cast<int>(mPaddle->mPosition.y - 100 / 2),
-        thickness,100};
+        static_cast<int>(mPaddle->mPosition.y - mPaddle->mHeight / 2),
+        thickness,mPaddle->mHeight};
     SDL_RenderFillRect(mRenderer, &paddle_rect);
+    //绘制墙壁
+    SDL_SetRenderDrawColor(
+        mRenderer,
+        255, 255, 255, 255);
+
+    SDL_Rect wall_top = { 0,0,mWindowWidth,thickness };
+    SDL_RenderFillRect(mRenderer, &wall_top);
+
+    SDL_Rect wall_right = { mWindowWidth - thickness,0,mWindowHeight - thickness,mWindowHeight };
+    SDL_RenderFillRect(mRenderer, &wall_right);
+
+    SDL_Rect wall_button = { 0,mWindowHeight - thickness,mWindowWidth,mWindowHeight };
+    SDL_RenderFillRect(mRenderer, &wall_button);
 
     //显示缓冲区
     SDL_RenderPresent(mRenderer);
