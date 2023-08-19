@@ -1,9 +1,17 @@
+// ----------------------------------------------------------------
+// From Game Programming in C++ by Sanjay Madhav
+// Copyright (C) 2017 Sanjay Madhav. All rights reserved.
+// 
+// Released under the BSD License
+// See LICENSE in root directory for full details.
+// ----------------------------------------------------------------
+
 #pragma once
-#include<SDL2/SDL.h>
-#include<vector>
-#include<unordered_map>
-#include<string>
-#include"Actor.h"
+#include "SDL/SDL.h"
+#include <unordered_map>
+#include <string>
+#include <vector>
+
 class Game
 {
 public:
@@ -17,7 +25,7 @@ public:
 
 	void AddSprite(class SpriteComponent* sprite);
 	void RemoveSprite(class SpriteComponent* sprite);
-
+	
 	SDL_Texture* GetTexture(const std::string& fileName);
 private:
 	void ProcessInput();
@@ -25,7 +33,7 @@ private:
 	void GenerateOutput();
 	void LoadData();
 	void UnloadData();
-
+	
 	// Map of textures loaded
 	std::unordered_map<std::string, SDL_Texture*> mTextures;
 

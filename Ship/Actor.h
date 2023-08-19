@@ -1,8 +1,14 @@
+// ----------------------------------------------------------------
+// From Game Programming in C++ by Sanjay Madhav
+// Copyright (C) 2017 Sanjay Madhav. All rights reserved.
+// 
+// Released under the BSD License
+// See LICENSE in root directory for full details.
+// ----------------------------------------------------------------
+
 #pragma once
-#include<vector>
-#include"Common.h"
-#include"Game.h"
-#include"Component.h"
+#include <vector>
+#include "Math.h"
 class Actor
 {
 public:
