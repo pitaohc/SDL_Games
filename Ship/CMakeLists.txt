@@ -8,8 +8,9 @@ project(Ship LANGUAGES CXX)
 
 find_package(fmt CONFIG REQUIRED)
 find_package(SDL2 CONFIG REQUIRED)
-
-add_executable(${PROJECT_NAME} main.cpp Game.h Game.cpp Actor.h Actor.cpp Component.h Component.cpp Common.h)
+# 包含当前目录下所有.cpp和.h文件
+file(GLOB_RECURSE SRC_FILES *.cpp *.h *.c *.hpp)
+add_executable(${PROJECT_NAME} ${SRC_FILES})
 
 target_link_libraries(${PROJECT_NAME} PRIVATE fmt::fmt)
 target_link_libraries(${PROJECT_NAME}
